@@ -2,9 +2,9 @@ name: Actualizar tasas
 
 on:
   schedule:
-    - cron: '17 12 * * *'   # 8:17 a.m. hora de Caracas
-    - cron: '17 18 * * *'   # 2:17 p.m. hora de Caracas (el BCV publica en la tarde)
-  workflow_dispatch:         # botón "Run workflow" para correrlo a mano
+    - cron: '17 12 * * *' # 8:17 a.m. hora de Caracas
+    - cron: '17 18 * * *' # 2:17 p.m. hora de Caracas (el BCV publica en la tarde)
+  workflow_dispatch: # botón "Run workflow" para correrlo a mano
 
 permissions:
   contents: write
@@ -35,7 +35,7 @@ jobs:
                       return round(float(d[k]), 2)
               return None
 
-          antes = json.load(open('tasas.json')) if os.path.exists('tasas.json') else {}
+          antes = json.load(open('public/tasas.json')) if os.path.exists('public/tasas.json') else {}
           hoy = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-4))).date().isoformat()
           fuentes = []
 
@@ -76,7 +76,7 @@ jobs:
               'fuente': '; '.join(fuentes) + ('' if bcv and binance else ' (una tasa sin actualizar)'),
               'manual': False,
           }
-          json.dump(nuevo, open('tasas.json', 'w'), ensure_ascii=False, indent=2)
+          json.dump(nuevo, open('public/tasas.json', 'w'), ensure_ascii=False, indent=2)
           print(nuevo)
           PY
 
@@ -84,6 +84,5 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add tasas.json
+          git add public/tasas.json
           git diff --cached --quiet || (git commit -m "Tasas del $(TZ=America/Caracas date +%F)" && git push)
-

@@ -1,0 +1,6 @@
+dist
+node_modules
+package-lock.json
+public/tasas*.json
+# Legacy single-file app, replaced in the HIG redesign stage
+index.html
