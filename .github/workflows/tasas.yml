@@ -78,11 +78,18 @@ jobs:
           }
           json.dump(nuevo, open('public/tasas.json', 'w'), ensure_ascii=False, indent=2)
           print(nuevo)
+
+          # Daily history, used to value past expenses in real dollars.
+          # Only rates fetched today are stored; a missing one stays null.
+          ruta = 'public/tasas-historial.json'
+          historial = json.load(open(ruta)) if os.path.exists(ruta) else {}
+          historial[hoy] = {'bcv': bcv, 'binance': binance}
+          json.dump(dict(sorted(historial.items())), open(ruta, 'w'), ensure_ascii=False, indent=2)
           PY
 
       - name: Guardar en el repositorio
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/tasas.json
+          git add public/tasas.json public/tasas-historial.json
           git diff --cached --quiet || (git commit -m "Tasas del $(TZ=America/Caracas date +%F)" && git push)
