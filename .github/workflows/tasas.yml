@@ -1,1 +1,89 @@
+name: Actualizar tasas
+
+on:
+  schedule:
+    - cron: '17 12 * * *'   # 8:17 a.m. hora de Caracas
+    - cron: '17 18 * * *'   # 2:17 p.m. hora de Caracas (el BCV publica en la tarde)
+  workflow_dispatch:         # botón "Run workflow" para correrlo a mano
+
+permissions:
+  contents: write
+
+jobs:
+  tasas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Buscar tasas BCV y Binance
+        run: |
+          python3 - <<'PY'
+          import json, os, statistics, datetime, urllib.request
+
+          def pedir(url, cuerpo=None):
+              req = urllib.request.Request(
+                  url,
+                  data=json.dumps(cuerpo).encode() if cuerpo else None,
+                  headers={'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json',
+                           'Content-Type': 'application/json'})
+              with urllib.request.urlopen(req, timeout=25) as r:
+                  return json.load(r)
+
+          def numero(d):
+              for k in ('promedio', 'venta', 'compra'):
+                  if d.get(k):
+                      return round(float(d[k]), 2)
+              return None
+
+          antes = json.load(open('tasas.json')) if os.path.exists('tasas.json') else {}
+          hoy = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-4))).date().isoformat()
+          fuentes = []
+
+          bcv = None
+          try:
+              bcv = numero(pedir('https://ve.dolarapi.com/v1/dolares/oficial'))
+              if bcv: fuentes.append('BCV vía DolarAPI')
+          except Exception as e:
+              print('BCV no respondió:', e)
+
+          binance = None
+          try:
+              d = pedir('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search',
+                        {'asset': 'USDT', 'fiat': 'VES', 'tradeType': 'SELL', 'page': 1, 'rows': 10,
+                         'payTypes': [], 'publisherType': None, 'merchantCheck': False})
+              precios = [float(a['adv']['price']) for a in (d.get('data') or [])][:5]
+              if precios:
+                  binance = round(statistics.median(precios), 2)
+                  fuentes.append('Binance P2P venta USDT (mediana de los 5 primeros anuncios)')
+          except Exception as e:
+              print('Binance no respondió:', e)
+
+          if binance is None:
+              try:
+                  binance = numero(pedir('https://ve.dolarapi.com/v1/dolares/paralelo'))
+                  if binance: fuentes.append('paralelo vía DolarAPI (Binance no respondió)')
+              except Exception as e:
+                  print('Paralelo no respondió:', e)
+
+          if bcv is None and binance is None:
+              print('No se pudo actualizar ninguna tasa; se deja la anterior.')
+              raise SystemExit(0)
+
+          nuevo = {
+              'bcv': bcv if bcv else antes.get('bcv'),
+              'binance': binance if binance else antes.get('binance'),
+              'fecha': hoy,
+              'fuente': '; '.join(fuentes) + ('' if bcv and binance else ' (una tasa sin actualizar)'),
+              'manual': False,
+          }
+          json.dump(nuevo, open('tasas.json', 'w'), ensure_ascii=False, indent=2)
+          print(nuevo)
+          PY
+
+      - name: Guardar en el repositorio
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tasas.json
+          git diff --cached --quiet || (git commit -m "Tasas del $(TZ=America/Caracas date +%F)" && git push)
 
