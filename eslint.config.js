@@ -4,7 +4,7 @@ import prettier from 'eslint-config-prettier';
 import globals from 'globals';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'public', 'index.html'] },
+  { ignores: ['dist', 'node_modules', 'public'] },
   js.configs.recommended,
   ...tseslint.configs.strict,
   prettier,
@@ -15,5 +15,10 @@ export default tseslint.config(
       'no-console': ['warn', { allow: ['error', 'warn'] }],
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     },
+  },
+  {
+    files: ['scripts/**'],
+    languageOptions: { globals: { ...globals.node } },
+    rules: { 'no-console': 'off' },
   },
 );

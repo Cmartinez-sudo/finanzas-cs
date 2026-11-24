@@ -52,7 +52,7 @@ export function generarDemo(hoy = new Date()): Omit<Datos, 'tasaHoy'> & { tasasM
   const inicio = new Date(2026, 3, 1);
 
   const historial: Record<string, { bcv: number | null; binance: number | null }> = {};
-  const dias = Math.max(0, Math.round((hoy.getTime() - inicio.getTime()) / 864e5));
+  const dias = Math.max(0, Math.floor((hoy.getTime() - inicio.getTime()) / 864e5));
   for (let i = 0; i <= dias; i++) {
     const d = new Date(2026, 3, 1 + i);
     const bcv = 480 * Math.pow(919.82 / 480, i / Math.max(1, dias)) * (1 + (rnd() - 0.5) * 0.01);
