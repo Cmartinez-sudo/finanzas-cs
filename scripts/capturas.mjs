@@ -54,6 +54,17 @@ for (const [nombreDisp, disp] of [
       await page.waitForFunction(() => !document.querySelector('[aria-busy="true"]'));
       await ir(page);
       await page.waitForTimeout(450);
+      if (nombre === 'resumen' || nombre === 'inicio') {
+        // One image per chart card, for review in both themes.
+        await page.addStyleTag({ content: '.tabbar{visibility:hidden}' });
+        const cards = page.locator('figure.chart-card');
+        for (let i = 0; i < (await cards.count()); i++) {
+          const card = cards.nth(i);
+          const id = await card.locator('[data-grafico]').getAttribute('data-grafico');
+          await card.scrollIntoViewIfNeeded();
+          await card.screenshot({ path: `${out}/${nombreDisp}-grafico-${id}-${scheme}.png` });
+        }
+      }
       await page.screenshot({
         path: `${out}/${nombreDisp}-${nombre}-${scheme}.png`,
         fullPage: !['anotar', 'convertir'].includes(nombre),

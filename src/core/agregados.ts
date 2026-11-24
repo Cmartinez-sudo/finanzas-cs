@@ -194,7 +194,11 @@ export function planVsReal(b: Base, desde: string, hasta: string, vista: Vista):
   return cats
     .map((c) => ({
       id: c.id,
-      nombre: c.nombre,
+      // Together, both people may have a 'Gym': add the name so rows stay distinct.
+      nombre:
+        vista === 'juntos' && c.persona
+          ? `${c.nombre} · ${c.persona === 'carlos' ? 'Carlos' : 'Sofía'}`
+          : c.nombre,
       k: c.grupo === 'personal' ? (c.persona as string) : c.grupo,
       plan: sumCents(meses.map((mes) => planDelMes(b.planes, mes)?.presupuesto[c.id])),
       real: real.get(c.id) ?? 0,

@@ -219,3 +219,12 @@ describe('etapas and comparisons', () => {
     expect(variacion(10, 0)).toBeNull();
   });
 });
+
+describe('planVsReal labels', () => {
+  it('keeps same-named personal categories apart when together', () => {
+    const nombres = planVsReal(base(), '2026-10', '2026-10', 'juntos').map((x) => x.nombre);
+    expect(nombres).toContain('Gym · Carlos');
+    expect(nombres).toContain('Gym · Sofía');
+    expect(new Set(nombres).size).toBe(nombres.length);
+  });
+});

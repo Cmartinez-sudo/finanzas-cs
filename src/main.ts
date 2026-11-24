@@ -7,11 +7,12 @@ import { mesActual } from './core/fechas';
 import { alCambiar, get, recargar, set, setRepo } from './app/store';
 import { aplicarTema, seguirSistema } from './app/tema';
 import { DemoRepo } from './data/demo';
-import { SupabaseRepo } from './data/supabase';
+import type { SupabaseRepo } from './data/supabase';
 import { iniciarEventos } from './ui/eventos';
 import { t } from './strings';
 import { vistaApp } from './views/shell';
 import { vistaLogin } from './views/login';
+import { montarGraficos } from './ui/grafico';
 
 declare global {
   interface Window {
@@ -35,6 +36,7 @@ function pintar() {
         : null;
     app.innerHTML = vistaApp(get()).s;
     if (clave) app.querySelector<HTMLElement>(clave)?.focus();
+    void montarGraficos(app);
     document.title =
       get().tab === 'inicio'
         ? t.app
@@ -47,6 +49,14 @@ async function arrancar() {
   seguirSistema(pintar);
   iniciarEventos();
   alCambiar(pintar);
+  // Charts are drawn for the container width, so redraw them when it changes.
+  let ancho = innerWidth;
+  addEventListener('resize', () => {
+    if (Math.abs(innerWidth - ancho) > 40) {
+      ancho = innerWidth;
+      pintar();
+    }
+  });
 
   const cfg = window.SUPABASE_CONFIG;
   const forzarDemo = new URLSearchParams(location.search).has('demo');
@@ -60,6 +70,8 @@ async function arrancar() {
     return;
   }
 
+  // Loaded only when configured, so the demo and first paint stay light.
+  const { SupabaseRepo } = await import('./data/supabase');
   const repo = new SupabaseRepo(cfg.url, cfg.anonKey);
   setRepo(repo);
   let quitar: (() => void) | null = null;

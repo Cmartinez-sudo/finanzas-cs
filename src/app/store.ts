@@ -48,7 +48,7 @@ let estado: Estado = {
   pagina: null,
   verPersona: 'carlos',
   filtro: 'mios',
-  resumen: { vista: 'juntos', periodo: 'año', ancla: mesActual(), comparar: false, etapa: null },
+  resumen: { vista: 'juntos', periodo: 'mes', ancla: mesActual(), comparar: false, etapa: null },
 };
 
 const oyentes = new Set<(e: Estado) => void>();

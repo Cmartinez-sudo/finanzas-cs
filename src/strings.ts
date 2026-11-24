@@ -182,3 +182,38 @@ export const t = {
   noSeEntro: 'No se pudo entrar. Revisa tu internet e intenta de nuevo.',
   quienEres: '¿Quién eres?',
 };
+
+/** Chart titles and the one-line conclusions shown above each chart. */
+export const tg = {
+  t1: 'Ingresos, gastos y sobrante',
+  t2: 'En qué se va el dinero',
+  t3: 'Planificado vs. real',
+  t4: 'Progreso de los fondos',
+  t5: 'Deudas',
+  sobro: (juntos: boolean, mes: string, c: Cents, parcial: boolean) =>
+    parcial
+      ? `En ${mes} ${juntos ? 'van sobrando' : 'vas sobrando'} ${fmtUSD(c, 'whole')}`
+      : `En ${mes} ${juntos ? 'les sobraron' : 'te sobraron'} ${fmtUSD(c, 'whole')}`,
+  falto: (juntos: boolean, mes: string, c: Cents) =>
+    `En ${mes} ${juntos ? 'salió' : 'te salió'} ${fmtUSD(c, 'whole')} más de lo que entró`,
+  promedio: (c: Cents) => `Promedio del periodo: ${fmtUSD(c, 'whole')} al mes`,
+  top: (nombre: string, pct: number) => `${nombre} se lleva el ${Math.round(pct * 100)} % del ingreso`,
+  vsAnterior: (v: number) =>
+    v === 0
+      ? 'Igual que el periodo anterior'
+      : `${Math.abs(Math.round(v * 100))} % ${v < 0 ? 'menos' : 'más'} que el periodo anterior`,
+  pasadas: (n: number, nombres: string) =>
+    `${n === 1 ? 'Una categoría pasada' : `${n} categorías pasadas`}: ${nombres}`,
+  dentro: 'Todo dentro del presupuesto',
+  meta: (nombre: string, pct: number) => `${nombre} va al ${Math.round(pct * 100)} % de su meta`,
+  metaSinTope: (c: Cents) => `Llevan ${fmtUSD(c, 'whole')} ahorrados en total`,
+  deudaFin: (nombre: string, mes: string) => `${nombre} quedaría saldada en ${mes}`,
+  deudasPagadas: 'Todas las deudas están pagadas',
+  deudasSinRitmo: 'Sin pagos recientes para estimar cuándo terminan',
+  enCurso: 'mes en curso',
+  vacio: 'Todavía no hay datos para este periodo',
+  vacioSub: 'Los gráficos se llenan solos a medida que anoten gastos y marquen aportes.',
+  comparar: 'Comparar con el periodo anterior',
+  etapas: 'Etapas del plan',
+  todas: 'Todas',
+};
