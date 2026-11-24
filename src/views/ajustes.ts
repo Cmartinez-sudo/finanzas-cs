@@ -162,17 +162,20 @@ function paginaPlan(d: Datos): Html {
   const metas = metasActivas(d);
   const deudas = deudasActivas(d);
   const grupoCats = (titulo: string, cats: Categoria[]) =>
-    html`<section>
-      <h2 class="section-title">${titulo}</h2>
-      <div class="list">
-        ${cats.map((c) => html`<label class="cell"><span class="grow">${c.nombre}</span>${inMoney(`pres:${c.id}`, p?.presupuesto[c.id], c.nombre)}</label>`)}
-      </div>
-    </section>`;
+    !cats.length
+      ? html``
+      : html`<section>
+          <h2 class="section-title">${titulo}</h2>
+          <div class="list">
+            ${cats.map((c) => html`<label class="cell"><span class="grow">${c.nombre}</span>${inMoney(`pres:${c.id}`, p?.presupuesto[c.id], c.nombre)}</label>`)}
+          </div>
+        </section>`;
   const aportesDe = (q: Persona) => {
     const items = [
       ...metas.filter((m) => m.persona === null || m.persona === q).map((m) => [m.id, m.nombre] as const),
       ...deudas.filter((x) => x.persona === q).map((x) => [x.id, `Pago · ${x.nombre}`] as const),
     ];
+    if (!items.length) return html``;
     return html`<section>
       <h2 class="section-title">Aportes de ${NOMBRE[q]}</h2>
       <div class="list">
@@ -187,6 +190,19 @@ function paginaPlan(d: Datos): Html {
           >Estos montos se guardan como el plan de ${mesLargo(mesActual())} en adelante.</span
         >
       </p>
+      ${
+        d.categorias.some((c) => !c.archivada)
+          ? ''
+          : html`<div class="notice info">
+              ${icon('lista')}<span
+                >Primero creen sus categorías de gasto (casa, imprevistos y las de cada uno); después vuelvan
+                aquí para ponerle un monto a cada una.
+                <button class="link" data-on="ir-ajustes" data-pagina="categorias">
+                  Ir a Categorías
+                </button></span
+              >
+            </div>`
+      }
       <section>
         <h2 class="section-title">Ingresos mensuales</h2>
         <div class="list">
@@ -503,10 +519,11 @@ function basePlan(d: Datos): Plan {
   );
 }
 
-async function guardarPagina(): Promise<void> {
+/** Saves the open page. Quiet mode is used before adding a row, so typed names are not lost. */
+async function guardarPagina(silencioso = false): Promise<boolean> {
   const e = get(),
     d = e.datos;
-  if (!d) return;
+  if (!d) return false;
   const repo = getRepo();
   const main = document.querySelector('main') as HTMLElement;
   const tareas: Array<Promise<void>> = [];
@@ -596,25 +613,39 @@ async function guardarPagina(): Promise<void> {
   try {
     await Promise.all(tareas);
     await recargar();
-    toast('Cambios guardados');
+    if (!silencioso) toast('Cambios guardados');
+    return true;
   } catch (err) {
     console.error(err);
-    toastError(guardarPagina);
+    toastError(() => void guardarPagina());
+    return false;
   }
 }
 
-onClick('guardar-pagina', () => guardarPagina());
+/** After adding a row, put the cursor in its name with the placeholder text selected. */
+function enfocarNombre(sel: string) {
+  setTimeout(() => {
+    const i = document.querySelector<HTMLInputElement>(`${sel} [data-k="nombre"]`);
+    i?.scrollIntoView({ block: 'center' });
+    i?.focus();
+    i?.select();
+  }, 80);
+}
+
+onClick('guardar-pagina', () => void guardarPagina());
 
 onClick('nueva-cat', async (el) => {
+  if (!(await guardarPagina(true))) return;
   const d = get().datos;
   if (!d) return;
   const g = el.dataset.g as GrupoGasto;
   const p = (el.dataset.p || null) as Persona | null;
   const orden =
     Math.max(0, ...d.categorias.filter((c) => c.grupo === g && c.persona === p).map((c) => c.orden)) + 1;
+  const id = nuevoId();
   await getRepo().guardarCategorias([
     {
-      id: nuevoId(),
+      id,
       grupo: g,
       persona: g === 'personal' ? p : null,
       nombre: 'Nueva categoría',
@@ -623,9 +654,11 @@ onClick('nueva-cat', async (el) => {
     },
   ]);
   await recargar();
+  enfocarNombre(`[data-cat="${id}"]`);
 });
 
 onClick('nueva-meta', async () => {
+  if (!(await guardarPagina(true))) return;
   const d = get().datos;
   if (!d) return;
   const m: Meta = {
@@ -641,9 +674,11 @@ onClick('nueva-meta', async () => {
   };
   await getRepo().guardarMeta(m);
   await recargar();
+  enfocarNombre(`[data-meta="${m.id}"]`);
 });
 
 onClick('nueva-deuda', async () => {
+  if (!(await guardarPagina(true))) return;
   const x: Deuda = {
     id: nuevoId(),
     nombre: 'Nueva deuda',
@@ -655,12 +690,15 @@ onClick('nueva-deuda', async () => {
   };
   await getRepo().guardarDeuda(x);
   await recargar();
+  enfocarNombre(`[data-deuda="${x.id}"]`);
 });
 
 onClick('nueva-etapa', async () => {
+  if (!(await guardarPagina(true))) return;
   const x: Etapa = { id: nuevoId(), nombre: 'Nueva etapa', desde: mesActual(), hasta: null };
   await getRepo().guardarEtapa(x);
   await recargar();
+  enfocarNombre(`[data-etapa="${x.id}"]`);
 });
 
 onClick('borrar-etapa', async (el) => {

@@ -222,7 +222,7 @@ function pintar() {
   if (f.tipo !== 'gasto' && !opciones.some(([id]) => id === f.destino)) f.destino = opciones[0]?.[0] ?? null;
   q('#mv-destino').innerHTML = html`<span class="field-label" id="mv-dest-l">${etiqueta}</span>${extra}
     <div class="pick-grid" role="group" aria-labelledby="mv-dest-l">
-      ${opciones.map(([id, n]) => html`<button type="button" data-a="destino" data-v="${id}" aria-pressed="${id === f.destino}">${n}</button>`)}
+      ${opciones.length ? opciones.map(([id, n]) => html`<button type="button" data-a="destino" data-v="${id}" aria-pressed="${id === f.destino}">${n}</button>`) : html`<p class="t-foot muted">${f.tipo === 'gasto' ? t.sinCategorias : f.tipo === 'pago_deuda' ? t.sinDeudas : t.sinFondos}</p>`}
     </div>`.s;
 
   q('#mv-dias').innerHTML = html`${seg(

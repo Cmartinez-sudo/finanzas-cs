@@ -61,7 +61,23 @@ export const t = {
   fijosLibre: 'Fijos + libre',
   aportesMes: 'Aportes y pagos del mes',
   sobrantePlan: 'Sobrante del plan',
-  sinPlan: 'Todavía no hay un plan. Ve a Ajustes → Plan para crearlo.',
+  pasos: {
+    titulo: 'Armen su plan',
+    sub: 'Configúrenlo a su manera, en este orden. Lo pueden cambiar cuando quieran desde Ajustes.',
+    categorias: 'Crear categorías de gasto',
+    categoriasSub: 'Casa, imprevistos y las de cada uno (gym, gasolina, libre…)',
+    montos: 'Ponerle montos al plan',
+    montosSub: 'Ingresos de cada uno y cuánto va a cada categoría',
+    fondos: 'Crear fondos y metas',
+    fondosSub: 'Viaje, emergencia, inversión… con su tope si tienen uno',
+    deudas: 'Agregar deudas',
+    deudasSub: 'Con su saldo de hoy, para verlas bajar',
+    opcional: 'opcional',
+    pie: 'Apenas existan categorías ya pueden anotar gastos con el botón +.',
+  },
+  sinCategorias: 'Todavía no hay categorías aquí. Créenlas en Ajustes → Categorías.',
+  sinFondos: 'Todavía no hay fondos. Créenlos en Ajustes → Fondos y metas.',
+  sinDeudas: 'No hay deudas registradas. Agréguenlas en Ajustes → Deudas.',
 
   // Gastos
   filtros: {

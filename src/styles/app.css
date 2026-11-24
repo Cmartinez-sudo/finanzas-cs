@@ -547,6 +547,10 @@ a.cell:active {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.cell .wrap .title,
+.cell .wrap .subtitle {
+  white-space: normal;
+}
 .cell .subtitle {
   display: block;
   font-size: 0.8125rem;
