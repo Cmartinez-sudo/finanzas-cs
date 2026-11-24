@@ -8,8 +8,8 @@ create table if not exists public.pareja (
   persona text not null unique check (persona in ('carlos', 'sofia'))
 );
 insert into public.pareja (email, persona) values
-  ('CORREO_CARLOS', 'carlos'),
-  ('CORREO_SOFIA', 'sofia')
+  ('cmartinezegana@gmail.com', 'carlos'),
+  ('sofiamartinezl1997@gmail.com', 'sofia')
 on conflict (email) do update set persona = excluded.persona;
 
 create or replace function public.mi_persona() returns text
