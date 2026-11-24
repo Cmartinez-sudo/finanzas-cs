@@ -20,7 +20,7 @@ import { haptic, toast, toastError } from '../ui/feedback';
 import { cx, html, type Html } from '../ui/html';
 import { icon } from '../ui/icons';
 import { NOMBRE, t } from '../strings';
-import { bloquePresupuesto, cabecera, diasRestantes, selectorMes, vacio } from './comunes';
+import { bloquePresupuesto, cabecera, diasRestantes, selectorMes } from './comunes';
 import { tarjetaSobrante } from './resumen';
 
 function itemTexto(d: Datos, i: ItemChecklist): { titulo: string; sub: string } {
@@ -78,14 +78,45 @@ function pendientes(d: Datos, e: Estado): Html {
   </section>`;
 }
 
+/** Shown until there is a plan: the setup steps in order, each one ticked when done. */
+function primerosPasos(d: Datos): Html {
+  const pasos: Array<[boolean, string, string, string, boolean]> = [
+    [d.categorias.some((c) => !c.archivada), 'categorias', t.pasos.categorias, t.pasos.categoriasSub, false],
+    [d.planes.length > 0, 'plan', t.pasos.montos, t.pasos.montosSub, false],
+    [d.metas.length > 0, 'metas', t.pasos.fondos, t.pasos.fondosSub, true],
+    [d.deudas.length > 0, 'deudas', t.pasos.deudas, t.pasos.deudasSub, true],
+  ];
+  return html`<div class="stack">
+    <section class="card">
+      <h2 class="t-title3">${t.pasos.titulo}</h2>
+      <p class="muted t-sub" style="margin-top:4px">${t.pasos.sub}</p>
+    </section>
+    <div class="list">
+      ${pasos.map(
+        ([hecho, pagina, titulo, sub, opcional], i) =>
+          html`<button class="cell has-icon" data-on="ir-ajustes" data-pagina="${pagina}">
+            <span class="badge-icon ${hecho ? 'k-casa' : 'k-otra'}"
+              >${hecho ? icon('check') : html`<b>${i + 1}</b>`}</span
+            >
+            <span class="grow wrap"
+              ><span class="title"
+                >${titulo}${opcional ? html` <span class="tag">${t.pasos.opcional}</span>` : ''}</span
+              ><span class="subtitle">${sub}</span></span
+            >${icon('der', 'i chev')}
+          </button>`,
+      )}
+    </div>
+    <p class="section-foot">${t.pasos.pie}</p>
+  </div>`;
+}
+
 export function vistaInicio(e: Estado): Html {
   const d = e.datos as Datos;
   const v = e.verPersona,
     mio = v === e.persona;
   const plan = planDe(d, e.mes);
   const head = cabecera(t.hola(e.persona));
-  if (!plan)
-    return html`${head}${selectorMes()}${vacio('lista', t.sinPlan, '', html`<button class="btn" data-on="ir-ajustes" data-pagina="plan">${t.ajustes}</button>`)}`;
+  if (!plan) return html`${head}${primerosPasos(d)}`;
 
   const cats = catsPersona(d, v);
   const pres = presupuestoPersonal(plan, d.categorias, v);
