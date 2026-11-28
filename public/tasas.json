@@ -1,7 +1,7 @@
 {
   "bcv": 926.36,
-  "binance": 1093.0,
-  "fecha": "2026-11-27",
+  "binance": 1091.0,
+  "fecha": "2026-11-28",
   "fuente": "BCV vía DolarAPI; Binance P2P venta USDT (mediana de los 5 primeros anuncios)",
   "manual": false
 }
